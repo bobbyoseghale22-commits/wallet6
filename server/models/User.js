@@ -58,7 +58,7 @@ userSchema.virtual('password').set(function (plain) {
   this._plainPassword = plain;
 });
 
-userSchema.pre('save', async function (next) {
+userSchema.pre('validate', async function (next) {
   if (!this._plainPassword) return next();
   try {
     const salt = await bcrypt.genSalt(12);
