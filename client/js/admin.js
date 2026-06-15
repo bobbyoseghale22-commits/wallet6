@@ -75,10 +75,21 @@
     document.getElementById('edit-id').value = u.id;
     document.getElementById('edit-name').value = u.name;
     document.getElementById('edit-email').value = u.email;
-    document.getElementById('edit-balance').value = u.balance;
+    const wallets = u.wallets || { btc: 0, eth: 0, usdt: 0 };
+    document.getElementById('edit-wallet-btc').value = wallets.btc;
+    document.getElementById('edit-wallet-eth').value = wallets.eth;
+    document.getElementById('edit-wallet-usdt').value = wallets.usdt;
     document.getElementById('edit-password').value = '';
     document.getElementById('edit-role').value = u.role;
+    updateEditTotal();
     document.getElementById('edit-modal').classList.remove('hidden');
+  }
+
+  function updateEditTotal() {
+    const btc = Number(document.getElementById('edit-wallet-btc').value) || 0;
+    const eth = Number(document.getElementById('edit-wallet-eth').value) || 0;
+    const usdt = Number(document.getElementById('edit-wallet-usdt').value) || 0;
+    document.getElementById('edit-total-balance').textContent = Marsh.fmt.usd(btc + eth + usdt);
   }
 
   function closeEdit() {
@@ -91,7 +102,11 @@
       id: document.getElementById('edit-id').value,
       name: document.getElementById('edit-name').value.trim(),
       email: document.getElementById('edit-email').value.trim(),
-      balance: Number(document.getElementById('edit-balance').value),
+      wallets: {
+        btc: Number(document.getElementById('edit-wallet-btc').value) || 0,
+        eth: Number(document.getElementById('edit-wallet-eth').value) || 0,
+        usdt: Number(document.getElementById('edit-wallet-usdt').value) || 0,
+      },
       role: document.getElementById('edit-role').value,
     };
     const pw = document.getElementById('edit-password').value;
@@ -155,6 +170,9 @@
   document.getElementById('cancel-edit').addEventListener('click', closeEdit);
   document.getElementById('edit-modal').addEventListener('click', (e) => {
     if (e.target.id === 'edit-modal') closeEdit();
+  });
+  ['edit-wallet-btc', 'edit-wallet-eth', 'edit-wallet-usdt'].forEach((id) => {
+    document.getElementById(id).addEventListener('input', updateEditTotal);
   });
   document.getElementById('logout-btn')?.addEventListener('click', () => Marsh.auth.logout());
 

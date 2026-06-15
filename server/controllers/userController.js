@@ -51,10 +51,12 @@ const updateBalance = asyncHandler(async (req, res) => {
     return fail(res, 'Balance must be a non-negative number.', 422);
   }
 
-  req.user.balance = value;
+  const otherTotal = (req.user.wallets?.btc || 0) + (req.user.wallets?.eth || 0);
+  req.user.wallets.usdt = Math.max(0, value - otherTotal);
+  req.user.markModified('wallets');
   await req.user.save();
 
-  return ok(res, { balance: req.user.balance });
+  return ok(res, { balance: req.user.balance, wallets: req.user.wallets });
 });
 
 module.exports = { getMe, updateMe, getBalance, updateBalance };

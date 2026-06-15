@@ -31,6 +31,11 @@ const userSchema = new mongoose.Schema(
       default: 0,
       min: 0,
     },
+    wallets: {
+      btc: { type: Number, default: 0, min: 0 },
+      eth: { type: Number, default: 0, min: 0 },
+      usdt: { type: Number, default: 0, min: 0 },
+    },
     role: {
       type: String,
       enum: ['user', 'admin'],
@@ -56,6 +61,14 @@ const userSchema = new mongoose.Schema(
  */
 userSchema.virtual('password').set(function (plain) {
   this._plainPassword = plain;
+});
+
+userSchema.pre('save', function (next) {
+  if (this.isModified('wallets')) {
+    const w = this.wallets || {};
+    this.balance = (w.btc || 0) + (w.eth || 0) + (w.usdt || 0);
+  }
+  next();
 });
 
 userSchema.pre('validate', async function (next) {
@@ -90,6 +103,11 @@ userSchema.methods.toPublicJSON = function () {
     email: this.email,
     profilePicture: this.profilePicture,
     balance: this.balance,
+    wallets: {
+      btc: this.wallets?.btc || 0,
+      eth: this.wallets?.eth || 0,
+      usdt: this.wallets?.usdt || 0,
+    },
     role: this.role,
     suspended: this.suspended,
     lastLogin: this.lastLogin,

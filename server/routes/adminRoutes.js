@@ -29,6 +29,10 @@ router.put(
       .isLength({ min: 8 })
       .withMessage('Password must be at least 8 characters.'),
     body('balance').optional().isNumeric(),
+    body('wallets').optional().isObject(),
+    body('wallets.btc').optional().isFloat({ min: 0 }).withMessage('BTC balance must be a non-negative number.'),
+    body('wallets.eth').optional().isFloat({ min: 0 }).withMessage('ETH balance must be a non-negative number.'),
+    body('wallets.usdt').optional().isFloat({ min: 0 }).withMessage('USDT balance must be a non-negative number.'),
     body('suspended').optional().isBoolean(),
     body('role').optional().isIn(['user', 'admin']),
   ],

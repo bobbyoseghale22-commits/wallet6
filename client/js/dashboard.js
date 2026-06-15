@@ -6,9 +6,8 @@
   const user = await Marsh.requireAuth();
   if (!user) return;
 
-  // Demo holdings derived from the stored USD balance
+  // Coin prices used only to convert each wallet's USD value into a coin amount
   const PRICES = { btc: 64000, eth: 3100, usdt: 1 };
-  const SPLIT = { btc: 0.45, eth: 0.35, usdt: 0.2 };
   const CHANGE = { btc: +2.4, eth: -1.1, usdt: +0.0 };
 
   function render() {
@@ -27,9 +26,10 @@
     // Balance
     document.getElementById('total-balance').textContent = Marsh.fmt.usd(user.balance);
 
-    // Wallet cards
+    // Wallet cards — each wallet's USD value is set directly by the admin
+    const wallets = user.wallets || { btc: 0, eth: 0, usdt: 0 };
     Object.keys(PRICES).forEach((coin) => {
-      const fiat = user.balance * SPLIT[coin];
+      const fiat = wallets[coin] || 0;
       const amount = fiat / PRICES[coin];
       const amtEl = document.getElementById(`${coin}-amt`);
       const fiatEl = document.getElementById(`${coin}-fiat`);

@@ -39,7 +39,7 @@ const listUsers = asyncHandler(async (req, res) => {
  * model's virtual setter.
  */
 const updateUser = asyncHandler(async (req, res) => {
-  const { id, name, email, password, balance, suspended, role } = req.body;
+  const { id, name, email, password, balance, wallets, suspended, role } = req.body;
 
   if (!id) return fail(res, 'User id is required.', 400);
 
@@ -53,13 +53,31 @@ const updateUser = asyncHandler(async (req, res) => {
   if (typeof password === 'string' && password.length >= 8) {
     user.password = password; // rehashed on save
   }
-  if (balance !== undefined) {
+
+  if (wallets && typeof wallets === 'object') {
+    const assets = ['btc', 'eth', 'usdt'];
+    for (const asset of assets) {
+      if (wallets[asset] === undefined) continue;
+      const value = Number(wallets[asset]);
+      if (Number.isNaN(value) || value < 0) {
+        return fail(res, `${asset.toUpperCase()} wallet balance must be a non-negative number.`, 422);
+      }
+      user.wallets[asset] = value;
+    }
+    user.markModified('wallets');
+    // balance is recomputed from wallets in the pre-save hook
+  } else if (balance !== undefined) {
     const value = Number(balance);
     if (Number.isNaN(value) || value < 0) {
       return fail(res, 'Balance must be a non-negative number.', 422);
     }
-    user.balance = value;
+    // Direct balance edits (no per-wallet breakdown given) are applied to
+    // the USDT wallet so wallets stay in sync with the total.
+    const otherTotal = (user.wallets?.btc || 0) + (user.wallets?.eth || 0);
+    user.wallets.usdt = Math.max(0, value - otherTotal);
+    user.markModified('wallets');
   }
+
   if (typeof suspended === 'boolean') user.suspended = suspended;
   if (role && ['user', 'admin'].includes(role)) user.role = role;
 
@@ -137,7 +155,31 @@ const approveWithdrawal = asyncHandler(async (req, res) => {
     return fail(res, "User's balance is insufficient to approve this withdrawal.", 422);
   }
 
-  user.balance -= withdrawal.amount;
+  // Deduct from the relevant wallet(s).
+  if (withdrawal.method === 'crypto' && withdrawal.cryptoAsset) {
+    const asset = withdrawal.cryptoAsset.toLowerCase();
+    const available = user.wallets?.[asset] || 0;
+    if (withdrawal.amount > available) {
+      return fail(
+        res,
+        `User's ${withdrawal.cryptoAsset} wallet balance is insufficient for this withdrawal.`,
+        422
+      );
+    }
+    user.wallets[asset] = available - withdrawal.amount;
+  } else {
+    // Bank transfer: deduct proportionally across all wallets.
+    let remaining = withdrawal.amount;
+    const assets = ['usdt', 'btc', 'eth'];
+    for (const asset of assets) {
+      if (remaining <= 0) break;
+      const available = user.wallets?.[asset] || 0;
+      const take = Math.min(available, remaining);
+      user.wallets[asset] = available - take;
+      remaining -= take;
+    }
+  }
+  user.markModified('wallets');
   await user.save();
 
   withdrawal.status = 'approved';

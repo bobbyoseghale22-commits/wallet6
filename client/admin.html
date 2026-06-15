@@ -117,18 +117,32 @@
         <label for="edit-email">Email</label>
         <input class="input" type="email" id="edit-email" />
       </div>
-      <div class="grid" style="grid-template-columns:1fr 1fr;gap:16px">
-        <div class="field">
-          <label for="edit-balance">Balance (USD)</label>
-          <input class="input" type="number" id="edit-balance" min="0" step="0.01" />
+      <div class="field">
+        <label>Wallet Balances (USD)</label>
+        <div class="grid" style="grid-template-columns:1fr 1fr 1fr;gap:12px">
+          <div>
+            <label for="edit-wallet-btc" class="muted" style="font-size:0.78rem">Bitcoin (BTC)</label>
+            <input class="input" type="number" id="edit-wallet-btc" min="0" step="0.01" />
+          </div>
+          <div>
+            <label for="edit-wallet-eth" class="muted" style="font-size:0.78rem">Ethereum (ETH)</label>
+            <input class="input" type="number" id="edit-wallet-eth" min="0" step="0.01" />
+          </div>
+          <div>
+            <label for="edit-wallet-usdt" class="muted" style="font-size:0.78rem">USDT</label>
+            <input class="input" type="number" id="edit-wallet-usdt" min="0" step="0.01" />
+          </div>
         </div>
-        <div class="field">
-          <label for="edit-role">Role</label>
-          <select class="input" id="edit-role">
-            <option value="user">user</option>
-            <option value="admin">admin</option>
-          </select>
+        <div class="muted mt-sm" style="font-size:0.82rem">
+          Total balance: <span id="edit-total-balance" class="mono">$0.00</span>
         </div>
+      </div>
+      <div class="field">
+        <label for="edit-role">Role</label>
+        <select class="input" id="edit-role">
+          <option value="user">user</option>
+          <option value="admin">admin</option>
+        </select>
       </div>
       <div class="field">
         <label for="edit-password">Reset password (optional)</label>
