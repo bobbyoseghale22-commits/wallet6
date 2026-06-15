@@ -115,3 +115,55 @@
   .form-grid { grid-template-columns: 1fr; }
   .profile-stats { margin-left: 0; width: 100%; }
 }
+
+/* ------------------------------- Withdrawals ------------------------------- */
+.method-toggle {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.method-toggle .method-option {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 16px;
+  border-radius: var(--radius);
+  border: 1px solid var(--glass-border);
+  background: rgba(255, 255, 255, 0.02);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-weight: 600;
+  text-align: center;
+}
+.method-toggle .method-option:hover {
+  border-color: rgba(6, 182, 212, 0.4);
+}
+.method-toggle .method-option.active {
+  border-color: var(--cyan);
+  background: rgba(6, 182, 212, 0.08);
+  box-shadow: var(--glow-cyan);
+  color: var(--cyan);
+}
+.method-toggle .method-option .icon { font-size: 1.4rem; }
+
+.withdraw-method-fields { display: none; }
+.withdraw-method-fields.active { display: block; }
+
+.withdrawal-list { display: flex; flex-direction: column; gap: 12px; margin-top: 18px; }
+.withdrawal-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: var(--radius);
+  border: 1px solid var(--glass-border);
+  background: rgba(255, 255, 255, 0.02);
+  flex-wrap: wrap;
+}
+.withdrawal-item .w-main { display: flex; flex-direction: column; gap: 4px; }
+.withdrawal-item .w-amount { font-weight: 700; font-size: 1.05rem; }
+.withdrawal-item .w-meta { font-size: 0.8rem; color: var(--muted); }
+.withdrawal-item .w-reason { font-size: 0.78rem; color: var(--danger); margin-top: 2px; }

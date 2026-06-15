@@ -158,5 +158,146 @@
   });
   document.getElementById('logout-btn')?.addEventListener('click', () => Marsh.auth.logout());
 
+  /* ----------------------------------- Tabs ---------------------------------- */
+  document.querySelectorAll('[data-tab]').forEach((el) => {
+    el.addEventListener('click', () => {
+      document.querySelectorAll('[data-tab]').forEach((t) => t.classList.toggle('active', t === el));
+      const tab = el.dataset.tab;
+      document.getElementById('tab-users').classList.toggle('hidden', tab !== 'users');
+      document.getElementById('tab-withdrawals').classList.toggle('hidden', tab !== 'withdrawals');
+      if (tab === 'withdrawals') loadWithdrawals();
+    });
+  });
+
+  /* -------------------------------- Withdrawals ------------------------------- */
+  const wTbody = document.getElementById('withdrawal-rows');
+  let currentStatus = 'pending';
+
+  document.querySelectorAll('[data-status]').forEach((el) => {
+    el.addEventListener('click', () => {
+      document.querySelectorAll('[data-status]').forEach((t) => t.classList.toggle('active', t === el));
+      currentStatus = el.dataset.status;
+      loadWithdrawals();
+    });
+  });
+
+  function describeWithdrawal(w) {
+    if (w.method === 'bank') {
+      return `${escapeHtml(w.bankName)} — ${escapeHtml(w.accountName)}<br><span class="muted" style="font-size:0.78rem">Acct ••${escapeHtml((w.accountNumber || '').slice(-4))}${w.routingNumber ? ` · Routing ${escapeHtml(w.routingNumber)}` : ''}</span>`;
+    }
+    return `${escapeHtml(w.cryptoAsset)}${w.network ? ` (${escapeHtml(w.network)})` : ''}<br><span class="muted" style="font-size:0.78rem">${escapeHtml(w.walletAddress)}</span>`;
+  }
+
+  function withdrawalStatusBadge(status) {
+    if (status === 'approved') return '<span class="badge success">Approved</span>';
+    if (status === 'rejected') return '<span class="badge danger">Rejected</span>';
+    return '<span class="badge warning">Pending</span>';
+  }
+
+  async function loadWithdrawals() {
+    wTbody.innerHTML = `<tr><td colspan="7" class="center muted">Loading withdrawal requests…</td></tr>`;
+    try {
+      const q = currentStatus ? `?status=${encodeURIComponent(currentStatus)}` : '';
+      const data = await Marsh.api.get(`/api/admin/withdrawals${q}`);
+      renderWithdrawalRows(data.withdrawals);
+      refreshPendingBadge();
+    } catch (err) {
+      wTbody.innerHTML = `<tr><td colspan="7" class="center muted">${err.message}</td></tr>`;
+    }
+  }
+
+  async function refreshPendingBadge() {
+    try {
+      const data = await Marsh.api.get('/api/admin/withdrawals?status=pending&limit=100');
+      const badge = document.getElementById('pending-count-badge');
+      const count = data.pagination.total;
+      if (count > 0) {
+        badge.textContent = `${count} pending`;
+        badge.classList.remove('hidden');
+      } else {
+        badge.classList.add('hidden');
+      }
+    } catch (_) { /* ignore */ }
+  }
+
+  function renderWithdrawalRows(withdrawals) {
+    if (!withdrawals.length) {
+      wTbody.innerHTML = `<tr><td colspan="7" class="center muted">No withdrawal requests found.</td></tr>`;
+      return;
+    }
+    wTbody.innerHTML = withdrawals.map((w) => `
+      <tr>
+        <td>
+          <div style="font-weight:600">${escapeHtml(w.user?.name || '—')}</div>
+          <div class="muted" style="font-size:0.8rem">${escapeHtml(w.user?.email || '')}</div>
+        </td>
+        <td>${w.method === 'bank' ? '🏦 Bank' : '₿ Crypto'}</td>
+        <td style="font-size:0.85rem">${describeWithdrawal(w)}</td>
+        <td class="mono">${Marsh.fmt.usd(w.amount)}</td>
+        <td>
+          ${withdrawalStatusBadge(w.status)}
+          ${w.status === 'rejected' && w.rejectionReason ? `<div class="muted" style="font-size:0.75rem;margin-top:4px">${escapeHtml(w.rejectionReason)}</div>` : ''}
+        </td>
+        <td class="muted" style="font-size:0.82rem">${Marsh.fmt.dateShort(w.createdAt)}</td>
+        <td>
+          ${w.status === 'pending' ? `
+            <div class="row-actions">
+              <button class="btn btn-primary btn-sm" data-approve="${w.id}">Approve</button>
+              <button class="btn btn-danger btn-sm" data-reject="${w.id}">Reject</button>
+            </div>
+          ` : '<span class="muted" style="font-size:0.8rem">—</span>'}
+        </td>
+      </tr>
+    `).join('');
+
+    wTbody.querySelectorAll('[data-approve]').forEach((b) =>
+      b.addEventListener('click', () => approveWithdrawal(b.dataset.approve))
+    );
+    wTbody.querySelectorAll('[data-reject]').forEach((b) =>
+      b.addEventListener('click', () => openRejectModal(b.dataset.reject))
+    );
+  }
+
+  async function approveWithdrawal(id) {
+    if (!confirm('Approve this withdrawal? The amount will be deducted from the user\'s balance.')) return;
+    try {
+      await Marsh.api.put(`/api/admin/withdrawals/${id}/approve`);
+      Marsh.toast('Withdrawal approved.', 'success');
+      loadWithdrawals();
+    } catch (err) {
+      Marsh.toast(err.message, 'error');
+    }
+  }
+
+  function openRejectModal(id) {
+    document.getElementById('reject-id').value = id;
+    document.getElementById('reject-reason').value = '';
+    document.getElementById('reject-modal').classList.remove('hidden');
+  }
+
+  function closeRejectModal() {
+    document.getElementById('reject-modal').classList.add('hidden');
+  }
+
+  async function confirmReject() {
+    const id = document.getElementById('reject-id').value;
+    const reason = document.getElementById('reject-reason').value.trim();
+    try {
+      await Marsh.api.put(`/api/admin/withdrawals/${id}/reject`, { reason });
+      Marsh.toast('Withdrawal rejected.', 'success');
+      closeRejectModal();
+      loadWithdrawals();
+    } catch (err) {
+      Marsh.toast(err.message, 'error');
+    }
+  }
+
+  document.getElementById('cancel-reject').addEventListener('click', closeRejectModal);
+  document.getElementById('confirm-reject').addEventListener('click', confirmReject);
+  document.getElementById('reject-modal').addEventListener('click', (e) => {
+    if (e.target.id === 'reject-modal') closeRejectModal();
+  });
+
+  refreshPendingBadge();
   load();
 })();

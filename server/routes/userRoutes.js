@@ -6,6 +6,10 @@ const {
   getBalance,
   updateBalance,
 } = require('../controllers/userController');
+const {
+  createWithdrawal,
+  listMyWithdrawals,
+} = require('../controllers/withdrawalController');
 const { requireAuth } = require('../middleware/auth');
 const { handleValidation } = require('../middleware/validate');
 
@@ -37,6 +41,25 @@ router.put(
   [body('balance').isNumeric().withMessage('Balance must be a number.')],
   handleValidation,
   updateBalance
+);
+
+router.get('/withdrawals', listMyWithdrawals);
+
+router.post(
+  '/withdrawals',
+  [
+    body('method').isIn(['bank', 'crypto']).withMessage('Method must be bank or crypto.'),
+    body('amount').isFloat({ gt: 0 }).withMessage('Amount must be a positive number.'),
+    body('bankName').optional().isString().trim().isLength({ max: 200 }),
+    body('accountName').optional().isString().trim().isLength({ max: 200 }),
+    body('accountNumber').optional().isString().trim().isLength({ max: 60 }),
+    body('routingNumber').optional().isString().trim().isLength({ max: 60 }),
+    body('cryptoAsset').optional().isIn(['BTC', 'ETH', 'USDT']),
+    body('walletAddress').optional().isString().trim().isLength({ max: 200 }),
+    body('network').optional().isString().trim().isLength({ max: 60 }),
+  ],
+  handleValidation,
+  createWithdrawal
 );
 
 module.exports = router;

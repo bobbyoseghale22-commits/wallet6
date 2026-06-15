@@ -38,25 +38,67 @@
 
       <div class="glass" style="padding:22px;margin-top:24px">
         <div class="toolbar">
+          <div class="method-toggle" style="flex:0 0 auto;max-width:380px">
+            <div class="method-option active" data-tab="users">
+              <span>Users</span>
+            </div>
+            <div class="method-option" data-tab="withdrawals">
+              <span>Withdrawals</span>
+              <span class="badge warning hidden" id="pending-count-badge" style="margin-top:4px">0 pending</span>
+            </div>
+          </div>
           <input class="input search" id="search" type="text" placeholder="Search by name or email…" />
         </div>
 
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>User</th>
-                <th>Role</th>
-                <th>Balance</th>
-                <th>Status</th>
-                <th>Created</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody id="user-rows">
-              <tr><td colspan="6" class="center muted">Loading users…</td></tr>
-            </tbody>
-          </table>
+        <!-- Users tab -->
+        <div id="tab-users">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>User</th>
+                  <th>Role</th>
+                  <th>Balance</th>
+                  <th>Status</th>
+                  <th>Created</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="user-rows">
+                <tr><td colspan="6" class="center muted">Loading users…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Withdrawals tab -->
+        <div id="tab-withdrawals" class="hidden">
+          <div class="toolbar">
+            <div class="method-toggle" style="flex:0 0 auto;max-width:480px">
+              <div class="method-option active" data-status="pending"><span>Pending</span></div>
+              <div class="method-option" data-status="approved"><span>Approved</span></div>
+              <div class="method-option" data-status="rejected"><span>Rejected</span></div>
+              <div class="method-option" data-status=""><span>All</span></div>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>User</th>
+                  <th>Method</th>
+                  <th>Details</th>
+                  <th>Amount</th>
+                  <th>Status</th>
+                  <th>Requested</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="withdrawal-rows">
+                <tr><td colspan="7" class="center muted">Loading withdrawal requests…</td></tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>
@@ -95,6 +137,22 @@
       <div class="modal-actions">
         <button class="btn btn-ghost" id="cancel-edit">Cancel</button>
         <button class="btn btn-primary" id="save-edit">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Reject withdrawal modal -->
+  <div class="modal-overlay hidden" id="reject-modal">
+    <div class="glass modal">
+      <h3>Reject Withdrawal</h3>
+      <input type="hidden" id="reject-id" />
+      <div class="field">
+        <label for="reject-reason">Reason (optional, shown to user)</label>
+        <input class="input" type="text" id="reject-reason" placeholder="e.g. Verification required" />
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" id="cancel-reject">Cancel</button>
+        <button class="btn btn-danger" id="confirm-reject">Reject Request</button>
       </div>
     </div>
   </div>

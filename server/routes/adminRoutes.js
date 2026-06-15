@@ -4,6 +4,9 @@ const {
   listUsers,
   updateUser,
   deleteUser,
+  listWithdrawals,
+  approveWithdrawal,
+  rejectWithdrawal,
 } = require('../controllers/adminController');
 const { requireAuth, requireRole } = require('../middleware/auth');
 const { handleValidation } = require('../middleware/validate');
@@ -34,5 +37,16 @@ router.put(
 );
 
 router.delete('/user/:id', deleteUser);
+
+router.get('/withdrawals', listWithdrawals);
+
+router.put('/withdrawals/:id/approve', approveWithdrawal);
+
+router.put(
+  '/withdrawals/:id/reject',
+  [body('reason').optional().isString().trim().isLength({ max: 500 })],
+  handleValidation,
+  rejectWithdrawal
+);
 
 module.exports = router;

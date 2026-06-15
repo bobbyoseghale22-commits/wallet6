@@ -50,7 +50,10 @@
       <div class="glass balance-card">
         <div class="k">Total Wallet Balance</div>
         <div class="v" id="total-balance">$0.00</div>
-        <span class="badge success mt-sm">● Live balance</span>
+        <span class="badge success mt-sm">● Live Balance</span>
+        <div class="mt-md">
+          <button id="open-withdraw" class="btn btn-primary">Withdraw Funds</button>
+        </div>
       </div>
 
       <!-- Wallets -->
@@ -84,8 +87,86 @@
           <div class="change up" id="usdt-change">▲ 0.0% (24h)</div>
         </div>
       </div>
+
+      <!-- Withdrawal history -->
+      <h2 class="section-title" style="font-size:1.3rem;margin:32px 0 18px">Withdrawal Requests</h2>
+      <div class="glass" style="padding:22px">
+        <div id="withdrawal-list" class="withdrawal-list">
+          <p class="muted center">Loading…</p>
+        </div>
+      </div>
     </div>
   </main>
+
+  <!-- Withdraw modal -->
+  <div class="modal-overlay hidden" id="withdraw-modal">
+    <div class="glass modal">
+      <h3>Withdraw Funds</h3>
+
+      <div class="method-toggle">
+        <div class="method-option active" data-method="bank">
+          <span class="icon">🏦</span>
+          <span>Bank Transfer</span>
+        </div>
+        <div class="method-option" data-method="crypto">
+          <span class="icon">₿</span>
+          <span>Crypto</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="wd-amount">Amount (USD)</label>
+        <input class="input" type="number" id="wd-amount" min="0.01" step="0.01" placeholder="0.00" />
+      </div>
+
+      <!-- Bank fields -->
+      <div class="withdraw-method-fields active" data-fields="bank">
+        <div class="field">
+          <label for="wd-bank-name">Bank Name</label>
+          <input class="input" type="text" id="wd-bank-name" placeholder="e.g. Chase Bank" />
+        </div>
+        <div class="field">
+          <label for="wd-account-name">Account Holder Name</label>
+          <input class="input" type="text" id="wd-account-name" placeholder="Name on account" />
+        </div>
+        <div class="grid" style="grid-template-columns:1fr 1fr;gap:16px">
+          <div class="field">
+            <label for="wd-account-number">Account Number</label>
+            <input class="input" type="text" id="wd-account-number" placeholder="••••1234" />
+          </div>
+          <div class="field">
+            <label for="wd-routing-number">Routing Number</label>
+            <input class="input" type="text" id="wd-routing-number" placeholder="Optional" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Crypto fields -->
+      <div class="withdraw-method-fields" data-fields="crypto">
+        <div class="field">
+          <label for="wd-crypto-asset">Asset</label>
+          <select class="input" id="wd-crypto-asset">
+            <option value="BTC">Bitcoin (BTC)</option>
+            <option value="ETH">Ethereum (ETH)</option>
+            <option value="USDT">USDT</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="wd-wallet-address">Wallet Address</label>
+          <input class="input" type="text" id="wd-wallet-address" placeholder="Destination wallet address" />
+        </div>
+        <div class="field">
+          <label for="wd-network">Network</label>
+          <input class="input" type="text" id="wd-network" placeholder="e.g. Bitcoin, Ethereum (ERC-20), Tron (TRC-20)" />
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn btn-ghost" id="cancel-withdraw">Cancel</button>
+        <button class="btn btn-primary" id="submit-withdraw">Submit Request</button>
+      </div>
+    </div>
+  </div>
 
   <script src="/js/core.js"></script>
   <script src="/js/dashboard.js"></script>
