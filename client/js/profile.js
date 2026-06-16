@@ -17,7 +17,6 @@
   document.getElementById('p-country').textContent = user.country || '—';
   document.getElementById('p-created').textContent = Marsh.fmt.dateShort(user.createdAt);
   document.getElementById('p-lastlogin').textContent = Marsh.fmt.date(user.lastLogin);
-  document.getElementById('p-role').textContent = user.role;
 
   // Change password
   document.getElementById('save-password').addEventListener('click', async () => {

@@ -17,12 +17,14 @@ const listUsers = asyncHandler(async (req, res) => {
     const rx = new RegExp(search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
     filter.$or = [{ name: rx }, { email: rx }];
   }
+  if (req.query.role && ['user', 'admin'].includes(req.query.role)) {
+    filter.role = req.query.role;
+  }
+  if (req.query.suspended === 'true')  filter.suspended = true;
+  if (req.query.suspended === 'false') filter.suspended = false;
 
   const [users, total] = await Promise.all([
-    User.find(filter)
-      .sort({ createdAt: -1 })
-      .skip((page - 1) * limit)
-      .limit(limit),
+    User.find(filter).sort({ createdAt: -1 }).skip((page - 1) * limit).limit(limit),
     User.countDocuments(filter),
   ]);
 
