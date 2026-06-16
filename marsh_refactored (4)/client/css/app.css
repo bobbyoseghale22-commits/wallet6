@@ -1,0 +1,195 @@
+/* ============================================================================
+   App pages: dashboard, profile, admin
+   ========================================================================== */
+
+.app-main { padding: 40px 0 80px; }
+
+.page-head { margin-bottom: 32px; }
+.page-head h1 { font-size: 1.8rem; margin-bottom: 6px; }
+.page-head p { color: var(--muted); }
+
+/* Profile summary */
+.profile-card { padding: 28px; display: flex; gap: 22px; align-items: center; flex-wrap: wrap; }
+.avatar {
+  width: 84px; height: 84px;
+  border-radius: 18px;
+  object-fit: cover;
+  border: 2px solid var(--cyan);
+  box-shadow: var(--glow-cyan);
+  background: var(--surface-2);
+}
+.avatar-fallback {
+  width: 84px; height: 84px;
+  border-radius: 18px;
+  display: grid; place-items: center;
+  font-size: 2rem; font-weight: 800;
+  background: linear-gradient(135deg, var(--blue), var(--purple));
+  color: #fff;
+}
+.profile-meta h2 { font-size: 1.4rem; }
+.profile-meta .email { color: var(--muted); font-size: 0.95rem; }
+.profile-stats { display: flex; gap: 28px; margin-left: auto; flex-wrap: wrap; }
+.profile-stats .item .k { font-size: 0.78rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+.profile-stats .item .v { font-family: var(--font-mono); font-size: 1rem; margin-top: 2px; }
+
+/* Balance hero */
+.balance-card { padding: 32px; margin: 28px 0; position: relative; overflow: hidden; }
+.balance-card::after {
+  content: '';
+  position: absolute; top: -40%; right: -10%;
+  width: 320px; height: 320px;
+  background: radial-gradient(circle, rgba(6,182,212,0.25), transparent 70%);
+  pointer-events: none;
+}
+.balance-card .k { color: var(--muted); font-size: 0.9rem; }
+.balance-card .v {
+  font-size: 3rem; font-weight: 800; font-family: var(--font-mono);
+  margin-top: 6px;
+}
+
+/* Wallet grid */
+.wallet-grid { grid-template-columns: repeat(3, 1fr); }
+.wallet-card { padding: 24px; transition: transform 0.2s ease, border-color 0.2s ease; }
+.wallet-card:hover { transform: translateY(-4px); border-color: var(--cyan); }
+.wallet-card .top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+.coin {
+  width: 46px; height: 46px; border-radius: 12px;
+  display: grid; place-items: center;
+  font-family: var(--font-mono); font-weight: 700; font-size: 1.1rem;
+}
+.coin.btc { background: rgba(247,147,26,0.12); color: #f7931a; border: 1px solid rgba(247,147,26,0.3); }
+.coin.eth { background: rgba(98,126,234,0.12); color: #627eea; border: 1px solid rgba(98,126,234,0.3); }
+.coin.usdt { background: rgba(38,161,123,0.12); color: #26a17b; border: 1px solid rgba(38,161,123,0.3); }
+.wallet-card .amt { font-size: 1.5rem; font-weight: 700; font-family: var(--font-mono); }
+.wallet-card .fiat { color: var(--muted); font-size: 0.88rem; margin-top: 2px; }
+.wallet-card .change { font-size: 0.82rem; margin-top: 10px; }
+.change.up { color: var(--success); }
+.change.down { color: var(--danger); }
+
+/* Forms layout */
+.form-card { padding: 28px; max-width: 560px; }
+.form-grid { grid-template-columns: 1fr 1fr; gap: 16px; }
+
+/* Admin toolbar */
+.toolbar { display: flex; gap: 12px; align-items: center; margin-bottom: 20px; flex-wrap: wrap; }
+.toolbar .search { flex: 1; min-width: 220px; }
+
+.role-pill { font-size: 0.75rem; padding: 3px 10px; border-radius: 999px; font-weight: 600; }
+.role-pill.admin { background: rgba(139,92,246,0.15); color: var(--purple); }
+.role-pill.user { background: rgba(148,163,184,0.12); color: var(--muted); }
+
+.status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
+.status-dot.active { background: var(--success); box-shadow: 0 0 8px var(--success); }
+.status-dot.suspended { background: var(--danger); box-shadow: 0 0 8px var(--danger); }
+
+.row-actions { display: flex; gap: 8px; }
+
+/* Modal */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(5, 8, 22, 0.75);
+  backdrop-filter: blur(6px);
+  display: grid; place-items: center;
+  z-index: 300; padding: 20px;
+}
+.modal { padding: 28px; max-width: 480px; width: 100%; }
+.modal h3 { margin-bottom: 18px; font-size: 1.25rem; }
+.modal-actions { display: flex; gap: 12px; justify-content: flex-end; margin-top: 22px; }
+
+/* Auth/login page */
+.auth-wrap { min-height: calc(100vh - 68px); display: grid; place-items: center; padding: 40px 20px; }
+.auth-card { padding: 40px; max-width: 420px; width: 100%; text-align: center; }
+.auth-card .logo-mark-lg {
+  width: 56px; height: 56px; margin: 0 auto 20px;
+  display: grid; place-items: center; border-radius: 16px;
+  background: linear-gradient(135deg, var(--blue), var(--cyan));
+  box-shadow: var(--glow-cyan);
+}
+.auth-card h1 { font-size: 1.6rem; margin-bottom: 8px; }
+.auth-card p.sub { color: var(--muted); margin-bottom: 28px; }
+.divider { display: flex; align-items: center; gap: 14px; margin: 24px 0; color: var(--muted); font-size: 0.82rem; }
+.divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--glass-border); }
+
+@media (max-width: 900px) {
+  .wallet-grid { grid-template-columns: 1fr; }
+  .form-grid { grid-template-columns: 1fr; }
+  .profile-stats { margin-left: 0; width: 100%; }
+}
+
+/* ------------------------------- Withdrawals ------------------------------- */
+.method-toggle {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.method-toggle .method-option {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 16px;
+  border-radius: var(--radius);
+  border: 1px solid var(--glass-border);
+  background: rgba(255, 255, 255, 0.02);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-weight: 600;
+  text-align: center;
+}
+.method-toggle .method-option:hover {
+  border-color: rgba(6, 182, 212, 0.4);
+}
+.method-toggle .method-option.active {
+  border-color: var(--cyan);
+  background: rgba(6, 182, 212, 0.08);
+  box-shadow: var(--glow-cyan);
+  color: var(--cyan);
+}
+.method-toggle .method-option .icon { font-size: 1.4rem; }
+
+.withdraw-method-fields { display: none; }
+.withdraw-method-fields.active { display: block; }
+
+.withdrawal-list { display: flex; flex-direction: column; gap: 12px; margin-top: 18px; }
+.withdrawal-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: var(--radius);
+  border: 1px solid var(--glass-border);
+  background: rgba(255, 255, 255, 0.02);
+  flex-wrap: wrap;
+}
+.withdrawal-item .w-main { display: flex; flex-direction: column; gap: 4px; }
+.withdrawal-item .w-amount { font-weight: 700; font-size: 1.05rem; }
+.withdrawal-item .w-meta { font-size: 0.8rem; color: var(--muted); }
+.withdrawal-item .w-reason { font-size: 0.78rem; color: var(--danger); margin-top: 2px; }
+
+/* ----------------------------------- KYC ----------------------------------- */
+.kyc-doc-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 22px 18px;
+  border-radius: var(--radius);
+  text-align: center;
+  border: 1px solid var(--glass-border);
+  background: rgba(255,255,255,0.02);
+}
+.kyc-doc-icon { font-size: 2rem; }
+.kyc-doc-title { font-weight: 700; font-size: 0.98rem; }
+.kyc-doc-sub { font-size: 0.78rem; color: var(--muted); line-height: 1.4; }
+.kyc-doc-status { font-size: 0.8rem; font-weight: 600; min-height: 18px; }
+.kyc-doc-filename { font-size: 0.75rem; min-height: 16px; word-break: break-all; }
+.kyc-upload-btn { margin-top: 6px; cursor: pointer; }
+.kyc-doc-card.uploaded { border-color: rgba(6,182,212,0.35); }
+.kyc-doc-card.approved { border-color: rgba(16,185,129,0.4); background: rgba(16,185,129,0.04); }
+.kyc-doc-card.rejected { border-color: rgba(239,68,68,0.3); background: rgba(239,68,68,0.04); }
+
+/* KYC admin table */
+.kyc-docs-row { display: flex; gap: 10px; flex-wrap: wrap; }
+.doc-preview-btn { font-size: 0.78rem; padding: 3px 9px; }

@@ -1,0 +1,30 @@
+# Render deployment configuration for Marsh
+# Docs: https://render.com/docs/blueprint-spec
+#
+# This deploys a single Node web service that serves both the Express API
+# and the static frontend from /client.
+
+services:
+  - type: web
+    name: marsh
+    runtime: node
+    plan: free
+    region: frankfurt          # change to your closest region (oregon, ohio, singapore, etc.)
+    buildCommand: npm install
+    startCommand: node server/server.js
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: MONGODB_URI
+        sync: false            # set in the Render dashboard (secret)
+      - key: JWT_SECRET
+        generateValue: true    # Render generates a strong random value
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      # Optional: restrict CORS to a specific origin (defaults to same-origin).
+      # - key: CLIENT_ORIGIN
+      #   value: https://marsh.onrender.com

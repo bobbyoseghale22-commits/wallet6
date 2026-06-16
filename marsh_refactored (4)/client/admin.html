@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin — Marsh</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="stylesheet" href="/css/app.css" />
+</head>
+<body>
+  <nav class="nav">
+    <div class="container nav-inner">
+      <a href="/" class="brand">
+        <span class="logo-mark"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M3 18V6l6 6 6-6v12M21 6v12" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        Marsh
+      </a>
+      <div class="nav-links">
+        <a href="/dashboard" class="btn btn-ghost btn-sm">Dashboard</a>
+        <a href="/profile" class="btn btn-ghost btn-sm">Profile</a>
+        <a href="/admin" class="btn btn-ghost btn-sm">Admin</a>
+        <button id="logout-btn" class="btn btn-danger btn-sm">Logout</button>
+      </div>
+    </div>
+  </nav>
+
+  <main class="app-main">
+    <div class="container">
+      <div class="page-head flex justify-between items-center" style="flex-wrap:wrap;gap:12px">
+        <div>
+          <h1>Admin Panel</h1>
+          <p>Manage users, balances, and access. <span class="badge purple">Restricted</span></p>
+        </div>
+        <div class="badge"><span id="user-count">0</span> total users</div>
+      </div>
+
+      <div class="glass" style="padding:22px;margin-top:24px">
+        <div class="toolbar">
+          <div class="method-toggle" style="flex:0 0 auto;max-width:380px">
+            <div class="method-option active" data-tab="users">
+              <span>Users</span>
+            </div>
+            <div class="method-option" data-tab="withdrawals">
+              <span>Withdrawals</span>
+              <span class="badge warning hidden" id="pending-count-badge" style="margin-top:4px">0 pending</span>
+            </div>
+            <div class="method-option" data-tab="kyc">
+              <span>KYC</span>
+              <span class="badge warning hidden" id="kyc-pending-badge" style="margin-top:4px">0 pending</span>
+            </div>
+          </div>
+          <input class="input search" id="search" type="text" placeholder="Search by name or email…" />
+        </div>
+
+        <!-- Users tab -->
+        <div id="tab-users">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>User</th>
+                  <th>Role</th>
+                  <th>Balance</th>
+                  <th>Status</th>
+                  <th>Created</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="user-rows">
+                <tr><td colspan="6" class="center muted">Loading users…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Withdrawals tab -->
+        <div id="tab-withdrawals" class="hidden">
+          <div class="toolbar">
+            <div class="method-toggle" style="flex:0 0 auto;max-width:480px">
+              <div class="method-option active" data-status="pending"><span>Pending</span></div>
+              <div class="method-option" data-status="approved"><span>Approved</span></div>
+              <div class="method-option" data-status="rejected"><span>Rejected</span></div>
+              <div class="method-option" data-status=""><span>All</span></div>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>User</th>
+                  <th>Method</th>
+                  <th>Details</th>
+                  <th>Amount</th>
+                  <th>Status</th>
+                  <th>Requested</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="withdrawal-rows">
+                <tr><td colspan="7" class="center muted">Loading withdrawal requests…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+        <!-- KYC tab -->
+        <div id="tab-kyc" class="hidden">
+          <div class="toolbar" style="margin-bottom:16px">
+            <div class="method-toggle" style="flex:0 0 auto;max-width:580px">
+              <div class="method-option active" data-kyc-status="pending"><span>Pending</span></div>
+              <div class="method-option" data-kyc-status="approved"><span>Approved</span></div>
+              <div class="method-option" data-kyc-status="rejected"><span>Rejected</span></div>
+              <div class="method-option" data-kyc-status="resubmit_requested"><span>Resubmit</span></div>
+              <div class="method-option" data-kyc-status="all"><span>All</span></div>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>User</th>
+                  <th>Documents</th>
+                  <th>Status</th>
+                  <th>Submitted</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="kyc-rows">
+                <tr><td colspan="5" class="center muted">Loading KYC submissions…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+    </div>
+  </main>
+
+  <!-- KYC review modal -->
+  <div class="modal-overlay hidden" id="kyc-modal">
+    <div class="glass modal" style="max-width:520px">
+      <h3 id="kyc-modal-title">Review KYC</h3>
+      <input type="hidden" id="kyc-user-id" />
+
+      <!-- Document previews -->
+      <div id="kyc-doc-previews" style="display:flex;flex-direction:column;gap:10px;margin-bottom:18px"></div>
+
+      <div class="field">
+        <label for="kyc-note">Note to user <span class="muted" style="font-weight:400">(required for reject/resubmit)</span></label>
+        <input class="input" type="text" id="kyc-note" placeholder="e.g. Document is blurry, please reupload" />
+      </div>
+
+      <div class="modal-actions" style="flex-wrap:wrap;gap:8px">
+        <button class="btn btn-ghost" id="cancel-kyc">Cancel</button>
+        <button class="btn btn-ghost btn-sm" id="kyc-resubmit-btn" style="border-color:rgba(245,158,11,0.4);color:#f59e0b">Request Resubmit</button>
+        <button class="btn btn-danger btn-sm" id="kyc-reject-btn">Reject</button>
+        <button class="btn btn-primary btn-sm" id="kyc-approve-btn">Approve KYC</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit modal -->
+  <div class="modal-overlay hidden" id="edit-modal">
+    <div class="glass modal">
+      <h3>Edit User</h3>
+      <input type="hidden" id="edit-id" />
+      <div class="field">
+        <label for="edit-name">Name</label>
+        <input class="input" type="text" id="edit-name" />
+      </div>
+      <div class="field">
+        <label for="edit-email">Email</label>
+        <input class="input" type="email" id="edit-email" />
+      </div>
+      <div class="field">
+        <label>Wallet Balances (USD)</label>
+        <div class="grid" style="grid-template-columns:1fr 1fr 1fr;gap:12px">
+          <div>
+            <label for="edit-wallet-btc" class="muted" style="font-size:0.78rem">Bitcoin (BTC)</label>
+            <input class="input" type="number" id="edit-wallet-btc" min="0" step="0.01" />
+          </div>
+          <div>
+            <label for="edit-wallet-eth" class="muted" style="font-size:0.78rem">Ethereum (ETH)</label>
+            <input class="input" type="number" id="edit-wallet-eth" min="0" step="0.01" />
+          </div>
+          <div>
+            <label for="edit-wallet-usdt" class="muted" style="font-size:0.78rem">USDT</label>
+            <input class="input" type="number" id="edit-wallet-usdt" min="0" step="0.01" />
+          </div>
+        </div>
+        <div class="muted mt-sm" style="font-size:0.82rem">
+          Total balance: <span id="edit-total-balance" class="mono">$0.00</span>
+        </div>
+      </div>
+      <div class="field">
+        <label for="edit-role">Role</label>
+        <select class="input" id="edit-role">
+          <option value="user">user</option>
+          <option value="admin">admin</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="edit-password">Reset password (optional)</label>
+        <input class="input" type="password" id="edit-password" placeholder="Leave blank to keep current" autocomplete="new-password" />
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" id="cancel-edit">Cancel</button>
+        <button class="btn btn-primary" id="save-edit">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Reject withdrawal modal -->
+  <div class="modal-overlay hidden" id="reject-modal">
+    <div class="glass modal">
+      <h3>Reject Withdrawal</h3>
+      <input type="hidden" id="reject-id" />
+      <div class="field">
+        <label for="reject-reason">Reason (optional, shown to user)</label>
+        <input class="input" type="text" id="reject-reason" placeholder="e.g. Verification required" />
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" id="cancel-reject">Cancel</button>
+        <button class="btn btn-danger" id="confirm-reject">Reject Request</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/core.js"></script>
+  <script src="/js/admin.js"></script>
+</body>
+</html>
