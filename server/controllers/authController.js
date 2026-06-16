@@ -8,7 +8,7 @@ const { signToken, setAuthCookie, clearAuthCookie } = require('../utils/token');
  * Creates a new user with a bcrypt-hashed password and logs them in.
  */
 const register = asyncHandler(async (req, res) => {
-  const { name, email, password } = req.body;
+  const { name, email, password, country, phone } = req.body;
 
   const existing = await User.findOne({ email: email.toLowerCase() });
   if (existing) {
@@ -18,10 +18,12 @@ const register = asyncHandler(async (req, res) => {
   const user = new User({
     name: name.trim(),
     email: email.toLowerCase().trim(),
+    country: (country || '').trim(),
+    phone: (phone || '').trim(),
     balance: 0,
     lastLogin: new Date(),
   });
-  user.password = password; // virtual setter -> hashed on save
+  user.password = password;
   await user.save();
 
   const token = signToken(user);

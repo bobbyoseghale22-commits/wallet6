@@ -36,6 +36,41 @@ const userSchema = new mongoose.Schema(
       eth: { type: Number, default: 0, min: 0 },
       usdt: { type: Number, default: 0, min: 0 },
     },
+    country: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+    phone: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+    kyc: {
+      status: {
+        type: String,
+        enum: ['not_submitted', 'pending', 'approved', 'rejected', 'resubmit_requested'],
+        default: 'not_submitted',
+      },
+      proofOfId: {
+        filename: { type: String, default: '' },
+        url: { type: String, default: '' },
+        uploadedAt: { type: Date, default: null },
+      },
+      proofOfAddress: {
+        filename: { type: String, default: '' },
+        url: { type: String, default: '' },
+        uploadedAt: { type: Date, default: null },
+      },
+      proofOfFunds: {
+        filename: { type: String, default: '' },
+        url: { type: String, default: '' },
+        uploadedAt: { type: Date, default: null },
+      },
+      reviewedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
+      reviewedAt: { type: Date, default: null },
+      adminNote: { type: String, default: '' },
+    },
     role: {
       type: String,
       enum: ['user', 'admin'],
@@ -109,6 +144,16 @@ userSchema.methods.toPublicJSON = function () {
       usdt: this.wallets?.usdt || 0,
     },
     role: this.role,
+    country: this.country || '',
+    phone: this.phone || '',
+    kyc: {
+      status: this.kyc?.status || 'not_submitted',
+      proofOfId: this.kyc?.proofOfId || {},
+      proofOfAddress: this.kyc?.proofOfAddress || {},
+      proofOfFunds: this.kyc?.proofOfFunds || {},
+      reviewedAt: this.kyc?.reviewedAt || null,
+      adminNote: this.kyc?.adminNote || '',
+    },
     suspended: this.suspended,
     lastLogin: this.lastLogin,
     createdAt: this.createdAt,

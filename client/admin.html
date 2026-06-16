@@ -46,6 +46,10 @@
               <span>Withdrawals</span>
               <span class="badge warning hidden" id="pending-count-badge" style="margin-top:4px">0 pending</span>
             </div>
+            <div class="method-option" data-tab="kyc">
+              <span>KYC</span>
+              <span class="badge warning hidden" id="kyc-pending-badge" style="margin-top:4px">0 pending</span>
+            </div>
           </div>
           <input class="input search" id="search" type="text" placeholder="Search by name or email…" />
         </div>
@@ -101,8 +105,61 @@
           </div>
         </div>
       </div>
+
+        <!-- KYC tab -->
+        <div id="tab-kyc" class="hidden">
+          <div class="toolbar" style="margin-bottom:16px">
+            <div class="method-toggle" style="flex:0 0 auto;max-width:580px">
+              <div class="method-option active" data-kyc-status="pending"><span>Pending</span></div>
+              <div class="method-option" data-kyc-status="approved"><span>Approved</span></div>
+              <div class="method-option" data-kyc-status="rejected"><span>Rejected</span></div>
+              <div class="method-option" data-kyc-status="resubmit_requested"><span>Resubmit</span></div>
+              <div class="method-option" data-kyc-status="all"><span>All</span></div>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>User</th>
+                  <th>Documents</th>
+                  <th>Status</th>
+                  <th>Submitted</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="kyc-rows">
+                <tr><td colspan="5" class="center muted">Loading KYC submissions…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
     </div>
   </main>
+
+  <!-- KYC review modal -->
+  <div class="modal-overlay hidden" id="kyc-modal">
+    <div class="glass modal" style="max-width:520px">
+      <h3 id="kyc-modal-title">Review KYC</h3>
+      <input type="hidden" id="kyc-user-id" />
+
+      <!-- Document previews -->
+      <div id="kyc-doc-previews" style="display:flex;flex-direction:column;gap:10px;margin-bottom:18px"></div>
+
+      <div class="field">
+        <label for="kyc-note">Note to user <span class="muted" style="font-weight:400">(required for reject/resubmit)</span></label>
+        <input class="input" type="text" id="kyc-note" placeholder="e.g. Document is blurry, please reupload" />
+      </div>
+
+      <div class="modal-actions" style="flex-wrap:wrap;gap:8px">
+        <button class="btn btn-ghost" id="cancel-kyc">Cancel</button>
+        <button class="btn btn-ghost btn-sm" id="kyc-resubmit-btn" style="border-color:rgba(245,158,11,0.4);color:#f59e0b">Request Resubmit</button>
+        <button class="btn btn-danger btn-sm" id="kyc-reject-btn">Reject</button>
+        <button class="btn btn-primary btn-sm" id="kyc-approve-btn">Approve KYC</button>
+      </div>
+    </div>
+  </div>
 
   <!-- Edit modal -->
   <div class="modal-overlay hidden" id="edit-modal">

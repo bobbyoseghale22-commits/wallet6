@@ -16,6 +16,8 @@ router.post(
       .isString()
       .isLength({ min: 8 })
       .withMessage('Password must be at least 8 characters.'),
+    body('country').isString().trim().isLength({ min: 1, max: 100 }).withMessage('Country is required.'),
+    body('phone').isString().trim().isLength({ min: 5, max: 30 }).withMessage('A valid phone number is required.'),
   ],
   handleValidation,
   register

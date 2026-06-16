@@ -183,7 +183,9 @@
       const tab = el.dataset.tab;
       document.getElementById('tab-users').classList.toggle('hidden', tab !== 'users');
       document.getElementById('tab-withdrawals').classList.toggle('hidden', tab !== 'withdrawals');
+      document.getElementById('tab-kyc').classList.toggle('hidden', tab !== 'kyc');
       if (tab === 'withdrawals') loadWithdrawals();
+      if (tab === 'kyc') loadKyc();
     });
   });
 
@@ -316,6 +318,175 @@
     if (e.target.id === 'reject-modal') closeRejectModal();
   });
 
+  /* ================================== KYC ================================== */
+  const kycTbody = document.getElementById('kyc-rows');
+  let currentKycStatus = 'pending';
+
+  document.querySelectorAll('[data-kyc-status]').forEach((el) => {
+    el.addEventListener('click', () => {
+      document.querySelectorAll('[data-kyc-status]').forEach((t) => t.classList.toggle('active', t === el));
+      currentKycStatus = el.dataset.kycStatus;
+      loadKyc();
+    });
+  });
+
+  const KYC_STATUS_LABELS = {
+    not_submitted: ['Not Submitted', ''],
+    pending: ['Pending', 'warning'],
+    approved: ['Approved', 'success'],
+    rejected: ['Rejected', 'danger'],
+    resubmit_requested: ['Resubmit Requested', 'warning'],
+  };
+
+  function kycStatusBadge(status) {
+    const [label, cls] = KYC_STATUS_LABELS[status] || [status, ''];
+    return `<span class="badge ${cls}">${label}</span>`;
+  }
+
+  function docPill(doc, label) {
+    if (doc?.uploadedAt) {
+      return `<span class="badge success" style="font-size:0.72rem">${label} ✓</span>`;
+    }
+    return `<span class="badge" style="font-size:0.72rem;opacity:0.5">${label}</span>`;
+  }
+
+  async function loadKyc() {
+    kycTbody.innerHTML = `<tr><td colspan="5" class="center muted">Loading…</td></tr>`;
+    try {
+      const statusParam = currentKycStatus === 'all' ? '' : `?status=${encodeURIComponent(currentKycStatus)}`;
+      const data = await Marsh.api.get(`/api/admin/kyc${statusParam}`);
+      renderKycRows(data.users);
+      refreshKycBadge();
+    } catch (err) {
+      kycTbody.innerHTML = `<tr><td colspan="5" class="center muted">${err.message}</td></tr>`;
+    }
+  }
+
+  async function refreshKycBadge() {
+    try {
+      const data = await Marsh.api.get('/api/admin/kyc?status=pending&limit=100');
+      const badge = document.getElementById('kyc-pending-badge');
+      const count = data.pagination.total;
+      if (count > 0) { badge.textContent = `${count} pending`; badge.classList.remove('hidden'); }
+      else badge.classList.add('hidden');
+    } catch (_) {}
+  }
+
+  function renderKycRows(users) {
+    if (!users.length) {
+      kycTbody.innerHTML = `<tr><td colspan="5" class="center muted">No KYC submissions found.</td></tr>`;
+      return;
+    }
+    kycTbody.innerHTML = users.map((u) => `
+      <tr>
+        <td>
+          <div style="font-weight:600">${escapeHtml(u.name)}</div>
+          <div class="muted" style="font-size:0.8rem">${escapeHtml(u.email)}</div>
+          ${u.country ? `<div class="muted" style="font-size:0.75rem">${escapeHtml(u.country)}</div>` : ''}
+        </td>
+        <td>
+          <div class="kyc-docs-row">
+            ${docPill(u.proofOfId, 'ID')}
+            ${docPill(u.proofOfAddress, 'Address')}
+            ${docPill(u.proofOfFunds, 'Funds')}
+          </div>
+        </td>
+        <td>
+          ${kycStatusBadge(u.kycStatus)}
+          ${u.kycAdminNote ? `<div class="muted" style="font-size:0.75rem;margin-top:4px">${escapeHtml(u.kycAdminNote)}</div>` : ''}
+        </td>
+        <td class="muted" style="font-size:0.82rem">
+          ${u.proofOfId?.uploadedAt ? Marsh.fmt.dateShort(u.proofOfId.uploadedAt) : '—'}
+        </td>
+        <td>
+          <button class="btn btn-ghost btn-sm" data-kyc-review="${u.id}" data-kyc-name="${escapeHtml(u.name)}">
+            Review
+          </button>
+        </td>
+      </tr>
+    `).join('');
+
+    kycTbody.querySelectorAll('[data-kyc-review]').forEach((b) => {
+      b.addEventListener('click', () => openKycModal(b.dataset.kycReview, b.dataset.kycName));
+    });
+  }
+
+  /* -------------------------- KYC Review Modal -------------------------- */
+  let kycModalUserId = null;
+
+  async function openKycModal(userId, userName) {
+    kycModalUserId = userId;
+    document.getElementById('kyc-modal-title').textContent = `Review KYC — ${userName}`;
+    document.getElementById('kyc-user-id').value = userId;
+    document.getElementById('kyc-note').value = '';
+
+    // Load document previews
+    const previewsEl = document.getElementById('kyc-doc-previews');
+    previewsEl.innerHTML = '<p class="muted center" style="font-size:0.85rem">Loading documents…</p>';
+    document.getElementById('kyc-modal').classList.remove('hidden');
+
+    const docTypes = [
+      { key: 'proofOfId', label: '🪪 Proof of ID' },
+      { key: 'proofOfAddress', label: '🏠 Proof of Address' },
+      { key: 'proofOfFunds', label: '💰 Proof of Funds' },
+    ];
+
+    const previews = await Promise.all(docTypes.map(async ({ key, label }) => {
+      try {
+        const data = await Marsh.api.get(`/api/admin/kyc/${userId}/document/${key}`);
+        const isPdf = data.url?.startsWith('data:application/pdf');
+        return `
+          <div style="border:1px solid var(--glass-border);border-radius:10px;padding:12px">
+            <div style="font-weight:600;font-size:0.85rem;margin-bottom:8px">${label} — <span class="muted" style="font-weight:400">${escapeHtml(data.filename)}</span></div>
+            ${isPdf
+              ? `<a href="${data.url}" target="_blank" class="btn btn-ghost btn-sm doc-preview-btn">Open PDF ↗</a>`
+              : `<img src="${data.url}" alt="${label}" style="width:100%;max-height:220px;object-fit:contain;border-radius:6px;background:#111" />`
+            }
+          </div>`;
+      } catch (_) {
+        return `<div style="border:1px solid var(--glass-border);border-radius:10px;padding:12px;opacity:0.45">
+          <div style="font-weight:600;font-size:0.85rem">${label}</div>
+          <div class="muted" style="font-size:0.8rem;margin-top:4px">Not uploaded</div>
+        </div>`;
+      }
+    }));
+
+    previewsEl.innerHTML = previews.join('');
+  }
+
+  function closeKycModal() {
+    document.getElementById('kyc-modal').classList.add('hidden');
+    kycModalUserId = null;
+  }
+
+  async function submitKycAction(action) {
+    const id = kycModalUserId;
+    const note = document.getElementById('kyc-note').value.trim();
+
+    if ((action === 'reject' || action === 'request-resubmit') && !note) {
+      return Marsh.toast('A note is required for this action.', 'error');
+    }
+
+    try {
+      await Marsh.api.put(`/api/admin/kyc/${id}/${action}`, { note });
+      const labels = { approve: 'KYC approved.', reject: 'KYC rejected.', 'request-resubmit': 'Resubmission requested.' };
+      Marsh.toast(labels[action] || 'Done.', 'success');
+      closeKycModal();
+      loadKyc();
+    } catch (err) {
+      Marsh.toast(err.message, 'error');
+    }
+  }
+
+  document.getElementById('cancel-kyc').addEventListener('click', closeKycModal);
+  document.getElementById('kyc-modal').addEventListener('click', (e) => {
+    if (e.target.id === 'kyc-modal') closeKycModal();
+  });
+  document.getElementById('kyc-approve-btn').addEventListener('click', () => submitKycAction('approve'));
+  document.getElementById('kyc-reject-btn').addEventListener('click', () => submitKycAction('reject'));
+  document.getElementById('kyc-resubmit-btn').addEventListener('click', () => submitKycAction('request-resubmit'));
+
+  refreshKycBadge();
   refreshPendingBadge();
   load();
 })();

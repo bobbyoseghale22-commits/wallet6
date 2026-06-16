@@ -10,6 +10,10 @@ const {
   createWithdrawal,
   listMyWithdrawals,
 } = require('../controllers/withdrawalController');
+const {
+  uploadDocument,
+  getMyKyc,
+} = require('../controllers/kycController');
 const { requireAuth } = require('../middleware/auth');
 const { handleValidation } = require('../middleware/validate');
 
@@ -60,6 +64,20 @@ router.post(
   ],
   handleValidation,
   createWithdrawal
+);
+
+router.get('/kyc', getMyKyc);
+
+router.post(
+  '/kyc/upload',
+  [
+    body('docType').isIn(['proofOfId', 'proofOfAddress', 'proofOfFunds']).withMessage('Invalid document type.'),
+    body('filename').isString().trim().isLength({ min: 1, max: 200 }),
+    body('mimeType').isIn(['image/jpeg', 'image/png', 'image/webp', 'application/pdf']),
+    body('data').isString().notEmpty().withMessage('File data is required.'),
+  ],
+  handleValidation,
+  uploadDocument
 );
 
 module.exports = router;

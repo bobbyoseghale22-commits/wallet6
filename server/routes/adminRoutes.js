@@ -8,6 +8,13 @@ const {
   approveWithdrawal,
   rejectWithdrawal,
 } = require('../controllers/adminController');
+const {
+  listKyc,
+  getDocument,
+  approveKyc,
+  rejectKyc,
+  requestResubmit,
+} = require('../controllers/kycController');
 const { requireAuth, requireRole } = require('../middleware/auth');
 const { handleValidation } = require('../middleware/validate');
 
@@ -51,6 +58,23 @@ router.put(
   [body('reason').optional().isString().trim().isLength({ max: 500 })],
   handleValidation,
   rejectWithdrawal
+);
+
+// KYC
+router.get('/kyc', listKyc);
+router.get('/kyc/:userId/document/:docType', getDocument);
+router.put('/kyc/:userId/approve', approveKyc);
+router.put(
+  '/kyc/:userId/reject',
+  [body('note').isString().trim().isLength({ min: 1, max: 500 }).withMessage('Rejection reason is required.')],
+  handleValidation,
+  rejectKyc
+);
+router.put(
+  '/kyc/:userId/request-resubmit',
+  [body('note').isString().trim().isLength({ min: 1, max: 500 }).withMessage('Please specify what needs to be resubmitted.')],
+  handleValidation,
+  requestResubmit
 );
 
 module.exports = router;
